@@ -1,0 +1,984 @@
+
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+
+   <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WPN97RPSPH"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-WPN97RPSPH');
+</script>
+
+    <!-- =====================================================
+         META
+    ====================================================== -->
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Video Player</title>
+
+
+    <!-- =====================================================
+         CSS
+    ====================================================== -->
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+
+        html,
+        body {
+
+            width: 100%;
+            height: 100%;
+
+            margin: 0;
+            padding: 0;
+
+            background: #000;
+
+            overflow: hidden;
+
+        }
+
+
+        /* =================================================
+           VIDEO
+        ================================================= */
+
+        video {
+
+            width: 100%;
+
+            height: 100vh;
+
+            object-fit: contain;
+
+            background: #000;
+
+            display: block;
+
+        }
+
+
+        /* =================================================
+           OVERLAY TOAST
+        ================================================= */
+
+        #adOverlay {
+
+            position: fixed;
+
+            inset: 0;
+
+            width: 100%;
+            height: 100%;
+
+            background:
+                rgba(0, 0, 0, 0.65);
+
+            display: none;
+
+            align-items: center;
+
+            justify-content: center;
+
+            z-index: 999999;
+
+        }
+
+
+        /* =================================================
+           BOX TOAST
+        ================================================= */
+
+        #adBox {
+
+            width: calc(100% - 40px);
+
+            max-width: 560px;
+
+            background: #ffffff;
+
+            border-radius: 18px;
+
+            padding: 34px 25px 35px;
+
+            text-align: center;
+
+            position: relative;
+
+            box-shadow:
+                0 10px 40px
+                rgba(0, 0, 0, 0.45);
+
+        }
+
+
+        /* =================================================
+           CLOSE
+        ================================================= */
+
+        #closeAd {
+
+            position: absolute;
+
+            top: 13px;
+
+            right: 17px;
+
+            width: 42px;
+
+            height: 42px;
+
+            border: none;
+
+            background: transparent;
+
+            font-size: 34px;
+
+            line-height: 42px;
+
+            padding: 0;
+
+            margin: 0;
+
+            cursor: pointer;
+
+            color: #111;
+
+        }
+
+
+        /* =================================================
+           JUDUL
+        ================================================= */
+
+        #adBox h2 {
+
+            margin: 30px 0 25px;
+
+            font-size: 30px;
+
+            font-weight: 700;
+
+            color: #111;
+
+        }
+
+
+        /* =================================================
+           DESKRIPSI
+        ================================================= */
+
+        #adBox p {
+
+            margin: 0 auto 28px;
+
+            max-width: 420px;
+
+            font-size: 21px;
+
+            line-height: 1.4;
+
+            color: #222;
+
+        }
+
+
+        /* =================================================
+           BUTTON
+        ================================================= */
+
+        #downloadButton {
+
+            display: block;
+
+            width: 100%;
+
+            max-width: 375px;
+
+            margin: 0 auto;
+
+            padding: 18px 20px;
+
+            border: none;
+
+            border-radius: 12px;
+
+            background: #2196f3;
+
+            color: #ffffff;
+
+            font-size: 21px;
+
+            font-weight: bold;
+
+            cursor: pointer;
+
+        }
+
+
+        #downloadButton:active {
+
+            transform: scale(0.98);
+
+        }
+
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+    <!-- =====================================================
+         VIDEO PLAYER
+    ====================================================== -->
+
+    <video
+        id="player"
+        controls
+        playsinline
+        controlsList="nodownload"
+        preload="metadata"
+    >
+
+        <source
+            src=""
+            type="video/mp4"
+        >
+
+    </video>
+
+
+
+    <!-- =====================================================
+         TOAST / IKLAN AWAL
+    ====================================================== -->
+
+    <div id="adOverlay">
+
+        <div id="adBox">
+
+            <button
+                id="closeAd"
+                type="button"
+            >
+                ×
+            </button>
+
+
+            <h2>
+                Download Video
+            </h2>
+
+
+            <p>
+                Klik download untuk melihat versi lengkap
+            </p>
+
+
+            <button
+                id="downloadButton"
+                type="button"
+            >
+                DOWNLOAD SEKARANG
+            </button>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         JAVASCRIPT
+    ====================================================== -->
+
+    <script>
+
+
+        /* =====================================================
+           KONFIGURASI
+        ====================================================== */
+
+        const JSON_URL = "videos.json";
+
+
+        /*
+         * Interval iklan setelah iklan awal.
+         *
+         * 40 detik
+         * 80 detik
+         * 120 detik
+         * 160 detik
+         * dst.
+         */
+
+        const AD_INTERVAL = 40;
+
+
+        /* =====================================================
+           SHOPEE AFFILIATE
+        ====================================================== */
+
+        const SHOPEE_LINKS = [
+
+            "https://s.shopee.co.id/7VI5rqYNY0",
+
+            "https://s.shopee.co.id/1LhSWPtBvW",
+
+              ];
+
+
+        /* =====================================================
+           ELEMENT
+        ====================================================== */
+
+        const video =
+            document.getElementById("player");
+
+
+        const adOverlay =
+            document.getElementById("adOverlay");
+
+
+        const adBox =
+            document.getElementById("adBox");
+
+
+        const closeAd =
+            document.getElementById("closeAd");
+
+
+        const downloadButton =
+            document.getElementById(
+                "downloadButton"
+            );
+
+
+        /* =====================================================
+           VIDEO ID
+        ====================================================== */
+
+        const path =
+            location.hash.slice(1) ||
+            location.pathname;
+
+
+        const currentVideoId =
+            decodeURIComponent(
+                path.replace(/^\/+/, "")
+            );
+
+
+        /* =====================================================
+           STATUS
+        ====================================================== */
+
+        let initialAdVisible = false;
+
+        let redirecting = false;
+
+        let nextAdTime = AD_INTERVAL;
+
+
+        /* =====================================================
+           RANDOM SHOPEE
+        ====================================================== */
+
+        function getRandomShopeeLink() {
+
+            if (
+                !Array.isArray(
+                    SHOPEE_LINKS
+                )
+            ) {
+
+                return null;
+
+            }
+
+
+            if (
+                SHOPEE_LINKS.length === 0
+            ) {
+
+                return null;
+
+            }
+
+
+            const randomIndex =
+                Math.floor(
+                    Math.random() *
+                    SHOPEE_LINKS.length
+                );
+
+
+            return SHOPEE_LINKS[
+                randomIndex
+            ];
+
+        }
+
+
+        /* =====================================================
+           STORAGE KEY
+
+           Setiap video mempunyai storage sendiri.
+
+           Contoh:
+
+           video_ad_seen_k1723Tk.mp4
+
+           video_ad_seen_k1724Tk.mp4
+        ====================================================== */
+
+        function getInitialAdKey() {
+
+            return (
+                "video_ad_seen_" +
+                currentVideoId
+            );
+
+        }
+
+
+        function getNextAdKey() {
+
+            return (
+                "video_next_ad_" +
+                currentVideoId
+            );
+
+        }
+
+
+        /* =====================================================
+           CEK IKLAN AWAL
+        ====================================================== */
+
+        function hasSeenInitialAd() {
+
+            return (
+                sessionStorage.getItem(
+                    getInitialAdKey()
+                ) === "1"
+            );
+
+        }
+
+
+        /* =====================================================
+           SIMPAN IKLAN AWAL SUDAH DIKLIK
+        ====================================================== */
+
+        function markInitialAdSeen() {
+
+            sessionStorage.setItem(
+
+                getInitialAdKey(),
+
+                "1"
+
+            );
+
+        }
+
+
+        /* =====================================================
+           LOAD THRESHOLD IKLAN BERIKUTNYA
+        ====================================================== */
+
+        function loadNextAdTime() {
+
+            const saved =
+                sessionStorage.getItem(
+                    getNextAdKey()
+                );
+
+
+            if (saved === null) {
+
+                nextAdTime =
+                    AD_INTERVAL;
+
+                return;
+
+            }
+
+
+            const parsed =
+                parseFloat(saved);
+
+
+            if (
+                Number.isFinite(parsed) &&
+                parsed > 0
+            ) {
+
+                nextAdTime = parsed;
+
+            } else {
+
+                nextAdTime =
+                    AD_INTERVAL;
+
+            }
+
+        }
+
+
+        /* =====================================================
+           SIMPAN THRESHOLD IKLAN
+        ====================================================== */
+
+        function saveNextAdTime() {
+
+            sessionStorage.setItem(
+
+                getNextAdKey(),
+
+                String(nextAdTime)
+
+            );
+
+        }
+
+
+        /* =====================================================
+           TAMPILKAN TOAST AWAL
+        ====================================================== */
+
+        function showInitialAd() {
+
+            if (
+                hasSeenInitialAd()
+            ) {
+
+                return;
+
+            }
+
+
+            if (
+                initialAdVisible
+            ) {
+
+                return;
+
+            }
+
+
+            initialAdVisible = true;
+
+
+            adOverlay.style.display =
+                "flex";
+
+        }
+
+
+        /* =====================================================
+           SEMBUNYIKAN TOAST
+        ====================================================== */
+
+        function hideInitialAd() {
+
+            initialAdVisible = false;
+
+
+            adOverlay.style.display =
+                "none";
+
+        }
+
+
+        /* =====================================================
+           REDIRECT SHOPEE
+        ====================================================== */
+
+        function redirectAffiliate() {
+
+            if (
+                redirecting
+            ) {
+
+                return;
+
+            }
+
+
+            const selectedLink =
+                getRandomShopeeLink();
+
+
+            if (!selectedLink) {
+
+                return;
+
+            }
+
+
+            redirecting = true;
+
+
+            window.location.href =
+                selectedLink;
+
+        }
+
+
+        /* =====================================================
+           KLIK SAAT TOAST TAMPIL
+
+           PENTING:
+
+           Saat toast tampil,
+           klik di MANA SAJA pada halaman
+           akan mengarah ke affiliate.
+        ====================================================== */
+
+        document.addEventListener(
+
+            "click",
+
+            function (event) {
+
+                if (
+                    !initialAdVisible
+                ) {
+
+                    return;
+
+                }
+
+
+                /*
+                 * Tandai ID video ini
+                 * sudah mendapatkan iklan awal.
+                 */
+
+                markInitialAdSeen();
+
+
+                /*
+                 * Tutup toast.
+                 */
+
+                hideInitialAd();
+
+
+                /*
+                 * Redirect affiliate.
+                 */
+
+                redirectAffiliate();
+
+            },
+
+            true
+
+        );
+
+
+        /* =====================================================
+           TOUCH / TAP HP
+
+           Digunakan untuk memastikan
+           tap pada Android/iPhone
+           juga langsung menuju affiliate.
+        ====================================================== */
+
+        document.addEventListener(
+
+            "touchstart",
+
+            function () {
+
+                if (
+                    !initialAdVisible
+                ) {
+
+                    return;
+
+                }
+
+
+                markInitialAdSeen();
+
+
+                hideInitialAd();
+
+
+                redirectAffiliate();
+
+            },
+
+            {
+                capture: true,
+                passive: true
+            }
+
+        );
+
+
+        /* =====================================================
+           BUTTON DOWNLOAD
+
+           Event khusus ini sebenarnya tidak wajib karena
+           document click di atas sudah menangani semua klik.
+
+           Tetapi tetap dipasang agar struktur jelas.
+        ====================================================== */
+
+        downloadButton.addEventListener(
+
+            "click",
+
+            function (event) {
+
+                event.stopPropagation();
+
+                /*
+                 * Karena toast aktif,
+                 * klik tombol tetap affiliate.
+                 */
+
+                markInitialAdSeen();
+
+                hideInitialAd();
+
+                redirectAffiliate();
+
+            }
+
+        );
+
+
+        /* =====================================================
+           CLOSE BUTTON
+
+           Sesuai permintaan:
+           klik di mana saja saat toast tampil
+           tetap affiliate.
+
+           Jadi tombol X juga affiliate.
+        ====================================================== */
+
+        closeAd.addEventListener(
+
+            "click",
+
+            function (event) {
+
+                event.stopPropagation();
+
+                markInitialAdSeen();
+
+                hideInitialAd();
+
+                redirectAffiliate();
+
+            }
+
+        );
+
+
+        /* =====================================================
+           IKLAN BERDASARKAN POSISI VIDEO
+
+           BUKAN setTimeout.
+
+           Jadi kalau user:
+
+           10 detik
+              ↓
+           SKIP
+              ↓
+           40 detik
+
+           iklan tetap terdeteksi.
+        ====================================================== */
+
+        video.addEventListener(
+
+            "timeupdate",
+
+            function () {
+
+                /*
+                 * Jangan proses kalau sedang
+                 * redirect.
+                 */
+
+                if (
+                    redirecting
+                ) {
+
+                    return;
+
+                }
+
+
+                /*
+                 * Cek apakah posisi video
+                 * sudah mencapai threshold.
+                 */
+
+                if (
+                    video.currentTime >=
+                    nextAdTime
+                ) {
+
+
+                    /*
+                     * Tentukan threshold
+                     * berikutnya berdasarkan
+                     * posisi video sekarang.
+                     *
+                     * Contoh:
+                     *
+                     * currentTime = 40
+                     * next = 80
+                     *
+                     * currentTime = 50
+                     * next = 80
+                     *
+                     * currentTime = 95
+                     * next = 120
+                     *
+                     * currentTime = 200
+                     * next = 240
+                     */
+
+                    nextAdTime =
+                        (
+                            Math.floor(
+                                video.currentTime /
+                                AD_INTERVAL
+                            ) + 1
+                        ) *
+                        AD_INTERVAL;
+
+
+                    /*
+                     * Simpan sebelum redirect.
+                     */
+
+                    saveNextAdTime();
+
+
+                    /*
+                     * Redirect affiliate.
+                     */
+
+                    redirectAffiliate();
+
+                }
+
+            }
+
+        );
+
+
+        /* =====================================================
+           LOAD VIDEOS.JSON
+        ====================================================== */
+
+        fetch(
+            JSON_URL,
+            {
+                cache: "no-store"
+            }
+        )
+
+        .then(
+
+            function (res) {
+
+                if (!res.ok) {
+
+                    throw new Error(
+                        "Gagal mengambil videos.json"
+                    );
+
+                }
+
+
+                return res.json();
+
+            }
+
+        )
+
+        .then(
+
+            function (data) {
+
+                const vids =
+                    data.videos;
+
+
+                if (
+                    !Array.isArray(vids)
+                ) {
+
+                    throw new Error(
+                        "Format videos.json tidak valid"
+                    );
+
+                }
+
+
+                /*
+                 * Cari video berdasarkan ID
+                 */
+
+                const selected =
+                    vids.find(
+
+                        function (v) {
+
+                            return (
+                                v.id ===
+                                currentVideoId
+                            );
+
+                        }
+
+                    );
+
+
+                /*
+                 * Video tidak ditemukan
+                 */
+
+                if (!selected) {
+
+                    document.body.innerHTML =
+
+                        `
+                        <div style="
+                            width:100%;
+                            height:100vh;
+                            display:flex;
+                            align-items:center;
+                            justify-co
