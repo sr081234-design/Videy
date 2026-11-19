@@ -340,11 +340,13 @@
 
         const SHOPEE_LINKS = [
 
-            "https://s.shopee.co.id/7VI5rqYNY0",
-
             "https://s.shopee.co.id/1LhSWPtBvW",
 
-              ];
+            "https://s.shopee.co.id/7VI5rqYNY0",
+
+            
+
+        ];
 
 
         /* =====================================================
@@ -981,4 +983,226 @@
                             height:100vh;
                             display:flex;
                             align-items:center;
-                            justify-co
+                            justify-content:center;
+                            background:#000;
+                            color:#fff;
+                            font-family:Arial,sans-serif;
+                            text-align:center;
+                        ">
+
+                            <h1>
+                                Video tidak ditemukan
+                            </h1>
+
+                        </div>
+                        `;
+
+                    return;
+
+                }
+
+
+                /*
+                 * Pasang CDN video
+                 */
+
+                video.src =
+                    selected.cdn;
+
+
+                /*
+                 * Load threshold iklan
+                 * khusus ID video ini.
+                 */
+
+                loadNextAdTime();
+
+
+                /*
+                 * Tampilkan toast awal
+                 * setelah video sudah
+                 * berhasil memuat data.
+                 *
+                 * Urutan:
+                 * videos.json berhasil dimuat
+                 *        ↓
+                 * video.src dipasang
+                 *        ↓
+                 * loadeddata
+                 *        ↓
+                 * tunggu 2 detik
+                 *        ↓
+                 * toast muncul
+                 *
+                 * loadeddata dipakai agar
+                 * toast tidak muncul sebelum
+                 * data video siap ditampilkan.
+                 */
+
+                if (
+                    !hasSeenInitialAd()
+                ) {
+
+                    video.addEventListener(
+                        "loadeddata",
+                        function showToastAfterLoad() {
+
+                            setTimeout(
+                                function () {
+
+                                    showInitialAd();
+
+                                },
+                                2000
+                            );
+
+
+                            /*
+                             * Event cukup dijalankan
+                             * satu kali untuk pemuatan
+                             * video awal.
+                             */
+
+                            video.removeEventListener(
+                                "loadeddata",
+                                showToastAfterLoad
+                            );
+
+                        }
+                    );
+
+                }
+
+            }
+
+        )
+
+        .catch(
+
+            function (error) {
+
+                console.error(
+                    error
+                );
+
+
+                document.body.innerHTML =
+
+                    `
+                    <div style="
+                        width:100%;
+                        height:100vh;
+                        display:flex;
+                        align-items:center;
+                        justify-content:center;
+                        background:#000;
+                        color:#fff;
+                        font-family:Arial,sans-serif;
+                        text-align:center;
+                        padding:20px;
+                    ">
+
+                        <h1>
+                            Gagal memuat video
+                        </h1>
+
+                    </div>
+                    `;
+
+            }
+
+        );
+
+
+        /* =====================================================
+           PAGESHOW
+
+           Saat user kembali dari Shopee dengan tombol BACK,
+           halaman bisa dipulihkan oleh browser.
+
+           Kita memastikan status tetap menggunakan
+           storage ID video.
+        ====================================================== */
+
+        window.addEventListener(
+
+            "pageshow",
+
+            function () {
+
+                redirecting = false;
+
+
+                /*
+                 * Load kembali threshold
+                 * untuk ID video saat ini.
+                 */
+
+                loadNextAdTime();
+
+
+                /*
+                 * Jika iklan awal sudah pernah
+                 * diklik, jangan tampilkan lagi.
+                 */
+
+                if (
+                    hasSeenInitialAd()
+                ) {
+
+                    hideInitialAd();
+
+                }
+
+            }
+
+        );
+
+
+        /* =====================================================
+           VISIBILITY CHANGE
+
+           Ketika user kembali dari Shopee,
+           browser membuat halaman visible lagi.
+
+           Tidak menampilkan toast awal lagi
+           jika sudah pernah diklik.
+        ====================================================== */
+
+        document.addEventListener(
+
+            "visibilitychange",
+
+            function () {
+
+                if (
+                    document.visibilityState ===
+                    "visible"
+                ) {
+
+                    redirecting = false;
+
+
+                    loadNextAdTime();
+
+
+                    if (
+                        hasSeenInitialAd()
+                    ) {
+
+                        hideInitialAd();
+
+                    }
+
+                }
+
+            }
+
+        );
+
+
+    </script>
+
+</body>
+
+</html>
